@@ -1,0 +1,8 @@
+/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles/edit_cache.dir
+/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles/rebuild_cache.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/boot/CMakeFiles/boot.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/boot/CMakeFiles/edit_cache.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/boot/CMakeFiles/rebuild_cache.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/loader/CMakeFiles/loader.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/loader/CMakeFiles/edit_cache.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/loader/CMakeFiles/rebuild_cache.dir
