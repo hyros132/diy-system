@@ -188,3 +188,75 @@ static void  detect_memory(void) {
 }
 ```
 
+#### 切换保护模式
+
+cpu上电复位后默认进入实模式，在这种模式下没有保护机制，但提供了BIOS服务 
+
+从实模式切换至保护模式需要遵循一定的流程
+
+![image-20231223094439325](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223094439325.png)
+
+参考资料：
+
+- 实模式：https://wiki.osdev.org/Real_Mode
+- A20地址线：https://blog.csdn.net/sinolover/article/details/93877845
+
+<img src="img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223094900242.png" alt="image-20231223094900242" style="zoom:33%;" />
+
+步骤：
+
+- 关中断
+
+- 打开A20地址线
+- 加载GDT表
+
+检查GDT表是否成功加载
+
+在qemu中查看寄存器状态，info registers，可以看到GDTR寄存器中的数据，前32位是gdt表在内存中的地址，后16位是gdt表的大小（24的十六进制-1）因为是索引值，所以减1。
+
+当前gdt表的内容：
+
+```c
+uint16_t gdt_table[][4] = {
+    {0, 0, 0, 0},
+    {0xFFFF, 0x0000, 0x9A00, 0x00CF},
+    {0xFFFF, 0x0000, 0x9200, 0x00CF},
+};
+```
+
+大小是3*8=24B。
+
+![image-20231223112357180](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223112357180.png)
+
+可以看到vscode的调试信息中gdt_table的地址是0x9518，与GDT寄存器保持一致
+
+![image-20231223113117888](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223113117888.png)
+
+- 设置CR0
+
+![image-20231223101031002](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223101031002.png)
+
+- 远跳转
+
+以上流程的代码实现代码实现 loader_16.c
+
+```c
+//进入保护模式
+static void enter_protect_mode(void){
+  //关中断
+	cli();
+	//开启A20地址线
+	uint8_t v = inb(0x92);
+	outb(0x92, v|0x2);
+	//加载gdt表
+	lgdt((uint32_t)gdt_table,sizeof(gdt_table));
+	//设置CR0寄存器
+ 	uint32_t cr0=read_cr0();
+	write_cr0(cr0|(1<<0));
+	//远跳转
+	far_jump(8,(uint32_t)protect_mode_entry);
+}
+```
+
+#### 实用LBA模式读取磁盘
+
