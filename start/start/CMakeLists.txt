@@ -50,7 +50,7 @@ include_directories(
 # 底层的若干子项目：含内核及应用程序
 add_subdirectory(./source/boot)
 add_subdirectory(./source/loader)
-
+add_subdirectory(./source/kernel)
 # 添加编译依赖，先生成app库，再生成kernel和shell
 # 不加则cmake则可能先编译shell和kernel，而缺少libapp，导致编译错误
 # add_dependencies(init app)

@@ -12,6 +12,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.28.0/CMakeCCompiler.cmake"
   "CMakeFiles/3.28.0/CMakeSystem.cmake"
   "/Users/hyros/code/OS/mycode/start/start/source/boot/CMakeLists.txt"
+  "/Users/hyros/code/OS/mycode/start/start/source/kernel/CMakeLists.txt"
   "/Users/hyros/code/OS/mycode/start/start/source/loader/CMakeLists.txt"
   "/opt/homebrew/Cellar/cmake/3.28.0/share/cmake/Modules/CMakeASMInformation.cmake"
   "/opt/homebrew/Cellar/cmake/3.28.0/share/cmake/Modules/CMakeCInformation.cmake"
@@ -39,10 +40,12 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "source/boot/CMakeFiles/CMakeDirectoryInformation.cmake"
   "source/loader/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "source/kernel/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "source/boot/CMakeFiles/boot.dir/DependInfo.cmake"
   "source/loader/CMakeFiles/loader.dir/DependInfo.cmake"
+  "source/kernel/CMakeFiles/kernel.dir/DependInfo.cmake"
   )

@@ -34,8 +34,7 @@ static void read_disk(int sector, int sector_count, uint8_t * buf) {
 void load_kernel(void){
     //将内核放在loader后面
     read_disk(100,500,(uint8_t *)SYS_KERNEL_LOAD_ADDR);
-
-    for(;;){}
+	((void (*)(boot_info_t *))SYS_KERNEL_LOAD_ADDR)(&boot_info);
 }
 
 

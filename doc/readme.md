@@ -260,3 +260,177 @@ static void enter_protect_mode(void){
 
 #### 实用LBA模式读取磁盘
 
+
+
+
+
+#### 创建内核工程
+
+我们期望boot、loader、kernel在内存中的位置
+
+![image-20231223181800762](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223181800762.png)
+
+具体处操作流程：
+
+- Loader_32.c的load_kernel函数负责读取磁盘内容，并加载到0x10000处
+
+```c
+void load_kernel(void){
+    //将内核放在loader后面
+    read_disk(100,500,(uint8_t *)SYS_KERNEL_LOAD_ADDR);
+	((void(*)(void))SYS_KERNEL_LOAD_ADDR)();   
+}
+```
+
+- 0x10000对应kernel/init/start.S中_start的地址
+
+```S
+ 	.text
+	.extern kernel_init
+	.global _start
+_start:
+	call kernel_init
+	jmp .
+```
+
+- call 条状到kernel_init执行后续内容
+
+```c
+void kernel_init(void){
+    
+}
+```
+
+注意事项：
+
+检查kernel加载位置是否正确，在vscode中查看内存地址0x100000处前20个字节的内容
+
+![image-20231223183935698](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223183935698.png)
+
+发现与反汇编的机器码保持一致，说明加载正确
+
+```dis
+00100000 <_start>:
+ 	.text
+	.extern kernel_init
+	.global _start
+_start:
+	call kernel_init
+  100000:	e8 02 00 00 00       	call   100007 <kernel_init>
+	jmp .
+  100005:	eb fe                	jmp    100005 <_start+0x5>
+
+00100007 <kernel_init>:
+#include "init.h"
+
+void kernel_init(void){
+  100007:	55                   	push   %ebp
+  100008:	89 e5                	mov    %esp,%ebp
+    
+}
+  10000a:	90                   	nop
+  10000b:	5d                   	pop    %ebp
+  10000c:	c3                   	ret
+```
+
+为了让编译器知道0x10000处是一个函数，还需要在lauch.json中添加
+
+<img src="img/:Users:hyros:Library:Application Support:typora-user-images:image-20231223184655671.png" alt="image-20231223184655671" style="zoom:50%;" />
+
+在script中吧对应的磁盘写入文件的注视打开，以便于把代码写入道磁盘中（方便qemu读取）
+
+#### 向内核传递启动信息
+
+- 将loader_16.c中boot_info_t boot_info的修饰词static去掉，因为要供外部使用
+- loader.h中添加extern boot_info_t boot_info;
+- 修改loader_32.c中load_kernel，向SYS_KERNEL_LOAD_ADDR处的函数传递参数
+
+```c
+void load_kernel(void){
+    //将内核放在loader后面
+    read_disk(100,500,(uint8_t *)SYS_KERNEL_LOAD_ADDR);
+	((void (*)(boot_info_t *))SYS_KERNEL_LOAD_ADDR)(&boot_info);
+}
+```
+
+- 修改SYS_KERNEL_LOAD_ADDR处的函数，即kernel/init/start.S
+
+```s
+ 	.text
+	.extern kernel_init
+	.global _start
+
+_start:
+	# void start (boot_info_t * boot_info)	
+	mov 4(%esp), %eax
+
+	# void kernel_init(boot_info_t boot_info)
+	push %eax
+	call kernel_init
+	jmp .
+```
+
+- 修改kernel_init的声明，以接受传递参数boot_info
+
+```c
+void kernel_init(boot_info_t boot_info){};
+```
+
+#### 代码数据段与链接脚本
+
+代码段的存放位置
+
+![image-20231224115541439](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231224115541439.png)
+
+上面的数据变量参考如下图示
+
+<img src="img/:Users:hyros:Library:Application Support:typora-user-images:image-20231224115620385.png" alt="image-20231224115620385" style="zoom:50%;" />
+
+总结：
+
+![image-20231224115748045](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231224115748045.png)
+
+实战：
+
+- 新建链接脚本文件 kernel.lds
+
+```
+SECTIONS{
+		// 段的起始地址，这一点可以在elf文件中查看
+    . = 0x100000;
+
+    .text : {
+         *(.text)
+    }
+
+    .rodata : {
+        *(.rodata)
+    }
+
+    .data : {
+        *(.data)
+    }
+
+    .bss : {
+        *(.bss)
+    }   
+}
+```
+
+- cmake中修改链接脚本
+
+```
+set(CMAKE_EXE_LINKER_FLAGS "-m elf_i386  -T ${PROJECT_SOURCE_DIR}/kernel.lds")
+```
+
+验证：
+
+在kernel_elf.txt中查看段信息，可以看到，.text的起始地址为00100000（我们的设置值）
+
+```
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        00100000 001000 000012 00  AX  0   0  1
+```
+

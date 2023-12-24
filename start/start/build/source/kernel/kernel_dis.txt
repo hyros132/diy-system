@@ -1,0 +1,68 @@
+
+/Users/hyros/code/OS/mycode/start/start/build/source/kernel/kernel.elf:     file format elf32-i386
+/Users/hyros/code/OS/mycode/start/start/build/source/kernel/kernel.elf
+architecture: i386, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0x00100000
+
+Program Header:
+    LOAD off    0x00001000 vaddr 0x00100000 paddr 0x00100000 align 2**12
+         filesz 0x00000012 memsz 0x00000012 flags r-x
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000012  00100000  00100000  00001000  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .debug_line   000000a4  00000000  00000000  00001012  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  2 .debug_line_str 00000109  00000000  00000000  000010b6  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  3 .debug_info   00000100  00000000  00000000  000011bf  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  4 .debug_abbrev 000000bb  00000000  00000000  000012bf  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  5 .debug_aranges 00000040  00000000  00000000  00001380  2**3
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  6 .debug_str    0000018e  00000000  00000000  000013c0  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+  7 .comment      00000012  00000000  00000000  0000154e  2**0
+                  CONTENTS, READONLY
+  8 .debug_frame  00000034  00000000  00000000  00001560  2**2
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+SYMBOL TABLE:
+00000000 l    df *ABS*	00000000 init.c
+0010000c g     F .text	00000006 kernel_init
+00100000 g       .text	00000000 _start
+
+
+
+Disassembly of section .text:
+
+00100000 <_start>:
+	.extern kernel_init
+	.global _start
+
+_start:
+	# void start (boot_info_t * boot_info)	
+	mov 4(%esp), %eax
+  100000:	8b 44 24 04          	mov    0x4(%esp),%eax
+
+	# void kernel_init(boot_info_t boot_info)
+	push %eax
+  100004:	50                   	push   %eax
+	call kernel_init
+  100005:	e8 02 00 00 00       	call   10000c <kernel_init>
+	jmp .
+  10000a:	eb fe                	jmp    10000a <_start+0xa>
+
+0010000c <kernel_init>:
+#include "init.h"
+#include "comm/boot_info.h"
+void kernel_init(boot_info_t boot_info){
+  10000c:	55                   	push   %ebp
+  10000d:	89 e5                	mov    %esp,%ebp
+
+}
+  10000f:	90                   	nop
+  100010:	5d                   	pop    %ebp
+  100011:	c3                   	ret

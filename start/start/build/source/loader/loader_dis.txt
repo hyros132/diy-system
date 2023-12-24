@@ -7,37 +7,37 @@ start address 0x00008000
 
 Program Header:
     LOAD off    0x00000000 vaddr 0x00007000 paddr 0x00007000 align 2**12
-         filesz 0x00001515 memsz 0x00001515 flags r-x
-    LOAD off    0x00001518 vaddr 0x00009518 paddr 0x00009518 align 2**12
-         filesz 0x00000018 memsz 0x0000007c flags rw-
+         filesz 0x0000152b memsz 0x0000152b flags r-x
+    LOAD off    0x0000152c vaddr 0x0000952c paddr 0x0000952c align 2**12
+         filesz 0x00000018 memsz 0x00000088 flags rw-
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         000004d8  00008000  00008000  00001000  2**0
+  0 .text         000004ee  00008000  00008000  00001000  2**0
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .rodata       0000003d  000084d8  000084d8  000014d8  2**0
+  1 .rodata       0000003d  000084ee  000084ee  000014ee  2**0
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  2 .data         00000018  00009518  00009518  00001518  2**2
+  2 .data         00000018  0000952c  0000952c  0000152c  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  3 .bss          00000054  00009540  00009540  00001530  2**5
+  3 .bss          00000054  00009560  00009560  00001544  2**5
                   ALLOC
-  4 .comment      00000012  00000000  00000000  00001530  2**0
+  4 .comment      00000012  00000000  00000000  00001544  2**0
                   CONTENTS, READONLY
-  5 .debug_aranges 00000060  00000000  00000000  00001548  2**3
+  5 .debug_aranges 00000060  00000000  00000000  00001558  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
-  6 .debug_info   000005bb  00000000  00000000  000015a8  2**0
+  6 .debug_info   00000643  00000000  00000000  000015b8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
-  7 .debug_abbrev 000002c4  00000000  00000000  00001b63  2**0
+  7 .debug_abbrev 0000033b  00000000  00000000  00001bfb  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
-  8 .debug_line   000002c2  00000000  00000000  00001e27  2**0
+  8 .debug_line   000002d2  00000000  00000000  00001f36  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
-  9 .debug_frame  00000230  00000000  00000000  000020ec  2**2
+  9 .debug_frame  00000238  00000000  00000000  00002208  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 10 .debug_str    000002d5  00000000  00000000  0000231c  2**0
+ 10 .debug_str    000002d5  00000000  00000000  00002440  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 11 .debug_line_str 0000015b  00000000  00000000  000025f1  2**0
+ 11 .debug_line_str 0000015b  00000000  00000000  00002715  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 12 .debug_rnglists 00000017  00000000  00000000  0000274c  2**0
+ 12 .debug_rnglists 00000017  00000000  00000000  00002870  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 SYMBOL TABLE:
 00000000 l    df *ABS*	00000000 loader_16.c
@@ -57,14 +57,14 @@ SYMBOL TABLE:
 00008370 l     F .text	0000001f outb
 0000838f l     F .text	00000130 read_disk
 0000830e g     F .text	00000026 loader_entry
-00009518 g     O .data	00000018 gdt_table
-000084bf g     F .text	00000019 load_kernel
-00009540 g     O .bss	00000054 boot_info
+0000952c g     O .data	00000018 gdt_table
+000084bf g     F .text	0000002f load_kernel
+00009560 g     O .bss	00000054 boot_info
 00008000 g       .text	00000000 _start
-00009530 g       .bss	00000000 __bss_start
+00009544 g       .bss	00000000 __bss_start
 00008003 g       .text	00000000 protect_mode_entry
-00009530 g       .data	00000000 _edata
-00009594 g       .bss	00000000 _end
+00009544 g       .data	00000000 _edata
+000095b4 g       .bss	00000000 _end
 
 
 
@@ -282,11 +282,11 @@ static void  detect_memory(void) {
     8152:	67 66 c7 45 f0 00 00 	movl   $0x0,-0x10(%ebp)
     8159:	00 00 
     show_msg("try to detect memory:");
-    815b:	66 68 d8 84 00 00    	pushl  $0x84d8
+    815b:	66 68 ee 84 00 00    	pushl  $0x84ee
     8161:	66 e8 a0 ff ff ff    	calll  8107 <show_msg>
     8167:	66 83 c4 04          	add    $0x4,%esp
 	boot_info.ram_region_count = 0;
-    816b:	66 c7 06 90 95 00 00 	movl   $0x0,-0x6a70
+    816b:	66 c7 06 b0 95 00 00 	movl   $0x0,-0x6a50
     8172:	00 00 
 	for (int i = 0; i < BOOT_RAM_REGION_MAX; i++) {
     8174:	67 66 c7 45 ec 00 00 	movl   $0x0,-0x14(%ebp)
@@ -312,7 +312,7 @@ static void  detect_memory(void) {
     81c4:	4d 53 
     81c6:	74 13                	je     81db <detect_memory+0x98>
             show_msg("failed.\r\n");
-    81c8:	66 68 ee 84 00 00    	pushl  $0x84ee
+    81c8:	66 68 04 85 00 00    	pushl  $0x8504
     81ce:	66 e8 33 ff ff ff    	calll  8107 <show_msg>
     81d4:	66 83 c4 04          	add    $0x4,%esp
     81d8:	e9 92 00             	jmp    826d <detect_memory+0x12a>
@@ -330,21 +330,21 @@ static void  detect_memory(void) {
     8200:	66 83 f8 01          	cmp    $0x1,%eax
     8204:	75 39                	jne    823f <detect_memory+0xfc>
             boot_info.ram_region_cfg[boot_info.ram_region_count].start = entry->BaseL;
-    8206:	66 a1 90 95          	mov    0x9590,%eax
+    8206:	66 a1 b0 95          	mov    0x95b0,%eax
     820a:	67 66 8b 55 e8       	mov    -0x18(%ebp),%edx
     820f:	67 66 8b 12          	mov    (%edx),%edx
-    8213:	67 66 89 14 c5 40 95 	mov    %edx,0x9540(,%eax,8)
+    8213:	67 66 89 14 c5 60 95 	mov    %edx,0x9560(,%eax,8)
     821a:	00 00 
             boot_info.ram_region_cfg[boot_info.ram_region_count].size = entry->LengthL;
-    821c:	66 a1 90 95          	mov    0x9590,%eax
+    821c:	66 a1 b0 95          	mov    0x95b0,%eax
     8220:	67 66 8b 55 e8       	mov    -0x18(%ebp),%edx
     8225:	67 66 8b 52 08       	mov    0x8(%edx),%edx
-    822a:	67 66 89 14 c5 44 95 	mov    %edx,0x9544(,%eax,8)
+    822a:	67 66 89 14 c5 64 95 	mov    %edx,0x9564(,%eax,8)
     8231:	00 00 
             boot_info.ram_region_count++;
-    8233:	66 a1 90 95          	mov    0x9590,%eax
+    8233:	66 a1 b0 95          	mov    0x95b0,%eax
     8237:	66 83 c0 01          	add    $0x1,%eax
-    823b:	66 a3 90 95          	mov    %eax,0x9590
+    823b:	66 a3 b0 95          	mov    %eax,0x95b0
 		if (contID == 0) {
     823f:	67 66 83 7d f0 00    	cmpl   $0x0,-0x10(%ebp)
     8245:	74 15                	je     825c <detect_memory+0x119>
@@ -359,7 +359,7 @@ static void  detect_memory(void) {
 			break;
     825c:	90                   	nop
     show_msg("ok.\r\n");
-    825d:	66 68 f8 84 00 00    	pushl  $0x84f8
+    825d:	66 68 0e 85 00 00    	pushl  $0x850e
     8263:	66 e8 9e fe ff ff    	calll  8107 <show_msg>
     8269:	66 83 c4 04          	add    $0x4,%esp
 }
@@ -399,7 +399,7 @@ static void enter_protect_mode(void){
     82bb:	66 83 c4 08          	add    $0x8,%esp
 	//加载gdt表
 	lgdt((uint32_t)gdt_table,sizeof(gdt_table));
-    82bf:	66 b8 18 95 00 00    	mov    $0x9518,%eax
+    82bf:	66 b8 2c 95 00 00    	mov    $0x952c,%eax
     82c5:	66 6a 18             	pushl  $0x18
     82c8:	66 50                	push   %eax
     82ca:	66 e8 aa fd ff ff    	calll  807a <lgdt>
@@ -432,7 +432,7 @@ void loader_entry(void){
     830e:	66 55                	push   %ebp
     8310:	66 89 e5             	mov    %esp,%ebp
     show_msg("......loading.......\n\r");
-    8313:	66 68 fe 84 00 00    	pushl  $0x84fe
+    8313:	66 68 14 85 00 00    	pushl  $0x8514
     8319:	66 e8 e8 fd ff ff    	calll  8107 <show_msg>
     831f:	66 83 c4 04          	add    $0x4,%esp
     detect_memory();
@@ -660,16 +660,26 @@ static void read_disk(int sector, int sector_count, uint8_t * buf) {
 void load_kernel(void){
     84bf:	55                   	push   %bp
     84c0:	89 e5                	mov    %sp,%bp
+    84c2:	83 ec 08             	sub    $0x8,%sp
     //将内核放在loader后面
     read_disk(100,500,(uint8_t *)SYS_KERNEL_LOAD_ADDR);
-    84c2:	68 00 00             	push   $0x0
-    84c5:	10 00                	adc    %al,(%bx,%si)
-    84c7:	68 f4 01             	push   $0x1f4
-    84ca:	00 00                	add    %al,(%bx,%si)
-    84cc:	6a 64                	push   $0x64
-    84ce:	e8 bc fe             	call   838d <outb+0x1d>
-    84d1:	ff                   	(bad)
-    84d2:	ff 83 c4 0c          	incw   0xcc4(%bp,%di)
-
-    for(;;){}
-    84d6:	eb fe                	jmp    84d6 <load_kernel+0x17>
+    84c5:	68 00 00             	push   $0x0
+    84c8:	10 00                	adc    %al,(%bx,%si)
+    84ca:	68 f4 01             	push   $0x1f4
+    84cd:	00 00                	add    %al,(%bx,%si)
+    84cf:	6a 64                	push   $0x64
+    84d1:	e8 b9 fe             	call   838d <outb+0x1d>
+    84d4:	ff                   	(bad)
+    84d5:	ff 83 c4 0c          	incw   0xcc4(%bp,%di)
+	((void (*)(boot_info_t *))SYS_KERNEL_LOAD_ADDR)(&boot_info);
+    84d9:	83 ec 0c             	sub    $0xc,%sp
+    84dc:	68 60 95             	push   $0x9560
+    84df:	00 00                	add    %al,(%bx,%si)
+    84e1:	b8 00 00             	mov    $0x0,%ax
+    84e4:	10 00                	adc    %al,(%bx,%si)
+    84e6:	ff d0                	call   *%ax
+    84e8:	83 c4 10             	add    $0x10,%sp
+}
+    84eb:	90                   	nop
+    84ec:	c9                   	leave
+    84ed:	c3                   	ret

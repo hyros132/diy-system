@@ -6,3 +6,6 @@
 /Users/hyros/code/OS/mycode/start/start/build/source/loader/CMakeFiles/loader.dir
 /Users/hyros/code/OS/mycode/start/start/build/source/loader/CMakeFiles/edit_cache.dir
 /Users/hyros/code/OS/mycode/start/start/build/source/loader/CMakeFiles/rebuild_cache.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/kernel/CMakeFiles/kernel.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/kernel/CMakeFiles/edit_cache.dir
+/Users/hyros/code/OS/mycode/start/start/build/source/kernel/CMakeFiles/rebuild_cache.dir
