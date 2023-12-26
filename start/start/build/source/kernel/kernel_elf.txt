@@ -8,32 +8,34 @@ ELF Header:
   Type:                              EXEC (Executable file)
   Machine:                           Intel 80386
   Version:                           0x1
-  Entry point address:               0x100000
+  Entry point address:               0x10000
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          5752 (bytes into file)
+  Start of section headers:          9816 (bytes into file)
   Flags:                             0x0
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
   Number of program headers:         1
   Size of section headers:           40 (bytes)
-  Number of section headers:         13
-  Section header string table index: 12
+  Number of section headers:         15
+  Section header string table index: 14
 
 Section Headers:
   [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
   [ 0]                   NULL            00000000 000000 000000 00      0   0  0
-  [ 1] .text             PROGBITS        00100000 001000 000012 00  AX  0   0  1
-  [ 2] .debug_line       PROGBITS        00000000 001012 0000a4 00      0   0  1
-  [ 3] .debug_line_str   PROGBITS        00000000 0010b6 000109 01  MS  0   0  1
-  [ 4] .debug_info       PROGBITS        00000000 0011bf 000100 00      0   0  1
-  [ 5] .debug_abbrev     PROGBITS        00000000 0012bf 0000bb 00      0   0  1
-  [ 6] .debug_aranges    PROGBITS        00000000 001380 000040 00      0   0  8
-  [ 7] .debug_str        PROGBITS        00000000 0013c0 00018e 01  MS  0   0  1
-  [ 8] .comment          PROGBITS        00000000 00154e 000012 01  MS  0   0  1
-  [ 9] .debug_frame      PROGBITS        00000000 001560 000034 00      0   0  4
-  [10] .symtab           SYMTAB          00000000 001594 000040 10     11   2  4
-  [11] .strtab           STRTAB          00000000 0015d4 00001b 00      0   0  1
-  [12] .shstrtab         STRTAB          00000000 0015ef 000087 00      0   0  1
+  [ 1] .text             PROGBITS        00010000 001000 000222 00  AX  0   0  1
+  [ 2] .data             PROGBITS        00010224 001224 000004 00  WA  0   0  4
+  [ 3] .bss              NOBITS          00010240 001228 002c10 00  WA  0   0 32
+  [ 4] .debug_line       PROGBITS        00000000 001228 00025e 00      0   0  1
+  [ 5] .debug_line_str   PROGBITS        00000000 001486 00021d 01  MS  0   0  1
+  [ 6] .debug_info       PROGBITS        00000000 0016a3 00056d 00      0   0  1
+  [ 7] .debug_abbrev     PROGBITS        00000000 001c10 00033a 00      0   0  1
+  [ 8] .debug_aranges    PROGBITS        00000000 001f50 000080 00      0   0  8
+  [ 9] .debug_str        PROGBITS        00000000 001fd0 000296 01  MS  0   0  1
+  [10] .comment          PROGBITS        00000000 002266 000012 01  MS  0   0  1
+  [11] .debug_frame      PROGBITS        00000000 002278 000154 00      0   0  4
+  [12] .symtab           SYMTAB          00000000 0023cc 000150 10     13  12  4
+  [13] .strtab           STRTAB          00000000 00251c 0000aa 00      0   0  1
+  [14] .shstrtab         STRTAB          00000000 0025c6 000092 00      0   0  1
 Key to Flags:
   W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
   L (link order), O (extra OS processing required), G (group), T (TLS),
@@ -44,22 +46,39 @@ There are no section groups in this file.
 
 Program Headers:
   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  LOAD           0x001000 0x00100000 0x00100000 0x00012 0x00012 R E 0x1000
+  LOAD           0x001000 0x00010000 0x00010000 0x00228 0x02e50 RWE 0x1000
 
  Section to Segment mapping:
   Segment Sections...
-   00     .text 
+   00     .text .data .bss 
 
 There is no dynamic section in this file.
 
 There are no relocations in this file.
 No processor specific unwind information to decode
 
-Symbol table '.symtab' contains 4 entries:
+Symbol table '.symtab' contains 21 entries:
    Num:    Value  Size Type    Bind   Vis      Ndx Name
      0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
-     1: 00000000     0 FILE    LOCAL  DEFAULT  ABS init.c
-     2: 0010000c     6 FUNC    GLOBAL DEFAULT    1 kernel_init
-     3: 00100000     0 NOTYPE  GLOBAL DEFAULT    1 _start
+     1: 00000000     0 FILE    LOCAL  DEFAULT  ABS start.S.obj
+     2: 00010011     0 NOTYPE  LOCAL  DEFAULT    1 gdt_reload
+     3: 00000000     0 FILE    LOCAL  DEFAULT  ABS cpu.c
+     4: 00010029    40 FUNC    LOCAL  DEFAULT    1 lgdt
+     5: 00010240  2048 OBJECT  LOCAL  DEFAULT    3 gdt_table
+     6: 00000000     0 FILE    LOCAL  DEFAULT  ABS irq.c
+     7: 00010196    40 FUNC    LOCAL  DEFAULT    1 lidt
+     8: 00010a40  1024 OBJECT  LOCAL  DEFAULT    3 idt_table
+     9: 00000000     0 FILE    LOCAL  DEFAULT  ABS init.c
+    10: 00010e40     4 OBJECT  LOCAL  DEFAULT    3 i
+    11: 00010224     4 OBJECT  LOCAL  DEFAULT    2 x
+    12: 0001018b    11 FUNC    GLOBAL DEFAULT    1 cpu_init
+    13: 0001021d     5 FUNC    GLOBAL DEFAULT    1 init_main
+    14: 00010e50  8192 OBJECT  GLOBAL DEFAULT    3 stack
+    15: 0001020a    19 FUNC    GLOBAL DEFAULT    1 kernel_init
+    16: 00010000     0 NOTYPE  GLOBAL DEFAULT    1 _start
+    17: 0001011e   109 FUNC    GLOBAL DEFAULT    1 init_gdt
+    18: 000101be    76 FUNC    GLOBAL DEFAULT    1 irq_init
+    19: 00010051   134 FUNC    GLOBAL DEFAULT    1 segment_desc_set
+    20: 000100d7    71 FUNC    GLOBAL DEFAULT    1 gate_desc_set
 
 No version information found in this file.

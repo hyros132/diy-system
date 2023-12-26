@@ -434,3 +434,238 @@ Section Headers:
   [ 1] .text             PROGBITS        00100000 001000 000012 00  AX  0   0  1
 ```
 
+#### 加载内核映像文件
+
+我们之前的存储规划，kernel存放在内存地址0x100000处
+
+<img src="img/:Users:hyros:Library:Application Support:typora-user-images:image-20231224164617996.png" alt="image-20231224164617996" style="zoom:50%;" />
+
+因为我们当前的处理是把kernel/init目录下编译生成的文件转化为了二进制文件 （ -O binary）参数。
+
+```c
+add_custom_command(TARGET ${PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${OBJCOPY_TOOL} -O binary ${PROJECT_NAME}.elf ${CMAKE_SOURCE_DIR}/../../image/${PROJECT_NAME}.elf
+                   COMMAND ${OBJDUMP_TOOL} -x -d -S -m i386 ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf > ${PROJECT_NAME}_dis.txt
+                   COMMAND ${READELF_TOOL} -a ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf > ${PROJECT_NAME}_elf.txt
+)
+```
+
+这样做有一个坏处，二进制映像文件的内容是按程序最终在内存中的分布来组织的，如果我们设置其中一个段的地址非常大 ，如下图.data所示，这样会造成生产的kernel.elf文件变得非常大，但其中很大一部分都是零填充的，是无用信息。
+
+![image-20231224165238664](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231224165238664.png)
+
+因此我们可以采用elf文件格式，把 -O binary 参数去掉，加上-S （表示不需要添加调试信息，节省空间）
+
+**elf文件加载过程**
+
+![image-20231224165535628](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231224165535628.png)
+
+新的存储规划，临时将kernel.elf读取到0x100000处，然后按照elf文件的读取规则读取到内存地址0x1000处
+
+![image-20231224165427606](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231224165427606.png)
+
+**操作步骤**
+
+- 将kernel.lds中的起始地址改为0x10000
+- 在kernel/init下新建elf.h描述elf文件的格式信息
+- 修改launch.json中0x100000为0x10000,保证编译器正确跳转
+- 修改load_32.c中load_kernel的启动流程
+
+```c
+void load_kernel(void){
+    //将内核放在loader后面
+    read_disk(100,500,(uint8_t *)SYS_KERNEL_LOAD_ADDR);
+
+	 // 解析ELF文件，并通过调用的方式，进入到内核中去执行，同时传递boot参数
+	 // 临时将elf文件先读到SYS_KERNEL_LOAD_ADDR处，再进行解析
+    uint32_t kernel_entry = reload_elf_file((uint8_t *)SYS_KERNEL_LOAD_ADDR);
+    if (kernel_entry == 0) {
+      die(-1);
+    }
+    ((void (*)(boot_info_t *))kernel_entry)(&boot_info);
+    for (;;) {}
+}
+```
+
+#### GDT表的创建及其使用
+
+GDT描述符的定义
+
+```c
+/**
+ * GDT描述符
+ */
+typedef struct _segment_desc_t {
+	uint16_t limit15_0;
+	uint16_t base15_0;
+	uint8_t base23_16; 
+	uint16_t attr;
+	uint8_t base31_24;
+}segment_desc_t;
+```
+
+![image-20231225115521119](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231225115521119.png)
+
+如下图所示，逻辑地址前16位会被当作段选择子，通过选择子查询GDT表，通过里面记录的段起始地址（同时还会做一些权限的校验）+ 后32位（offset）得到线性地址。线性地址再通过地址映射得到物理地址。
+
+![image-20231225201655511](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231225201655511.png)
+
+**实战步骤：**
+
+- 新建文件及文件夹
+
+![image-20231225202140136](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231225202140136.png)
+
+Cpu.c
+
+```c
+#include "cpu/cpu.h"
+#include "os_cfg.h"
+#include "comm/cpu_instr.h"
+
+static segment_desc_t gdt_table[GDT_TABLE_SIZE];
+
+/**
+ * 设置段描述符
+ */
+void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr) {
+    segment_desc_t * desc = gdt_table + (selector >> 3);
+
+	// 如果界限比较长，将长度单位换成4KB
+	if (limit > 0xfffff) {
+		attr |= SEG_G;
+		limit /= 0x1000;
+	}
+	desc->limit15_0 = limit & 0xffff;
+	desc->base15_0 = base & 0xffff;
+	desc->base23_16 = (base >> 16) & 0xff;
+	desc->attr = attr | (((limit >> 16) & 0xf) << 8);
+	desc->base31_24 = (base >> 24) & 0xff;
+}
+
+void init_gdt(void) {
+	// 全部清空
+    for (int i = 0; i < GDT_TABLE_SIZE; i++) {
+        segment_desc_set(i << 3, 0, 0, 0);
+    }
+
+	
+//数据段
+    segment_desc_set(KERNEL_SELECTOR_DS, 0x00000000, 0xFFFFFFFF,
+                     SEG_P_PRESENT | SEG_DPL0 | SEG_S_NORMAL | SEG_TYPE_DATA
+                     | SEG_TYPE_RW | SEG_D | SEG_G);
+
+    // 只能用非一致代码段，以便通过调用门更改当前任务的CPL执行关键的资源访问操作
+    segment_desc_set(KERNEL_SELECTOR_CS, 0x00000000, 0xFFFFFFFF,
+                     SEG_P_PRESENT | SEG_DPL0 | SEG_S_NORMAL | SEG_TYPE_CODE
+                     | SEG_TYPE_RW | SEG_D | SEG_G);
+
+	lgdt((uint32_t)gdt_table,sizeof(gdt_table));
+}
+
+void cpu_init(void){
+    init_gdt();
+}
+```
+
+Cpu.h
+
+```c
+#ifndef CPU_H
+#define CPU_H
+
+#include "comm/types.h"
+
+#pragma pack(1)
+
+/**
+ * GDT描述符
+ */
+typedef struct _segment_desc_t {
+	uint16_t limit15_0;
+	uint16_t base15_0;
+	uint8_t base23_16;
+	uint16_t attr;
+	uint8_t base31_24;
+}segment_desc_t;
+
+#pragma pack()
+
+#define SEG_G				(1 << 15)		// 设置段界限的单位，1-4KB，0-字节
+#define SEG_D				(1 << 14)		// 控制是否是32位、16位的代码或数据段
+#define SEG_P_PRESENT	    (1 << 7)		// 段是否存在
+
+#define SEG_DPL0			(0 << 5)		// 特权级0，最高特权级
+#define SEG_DPL3			(3 << 5)		// 特权级3，最低权限
+
+#define SEG_S_SYSTEM		(0 << 4)		// 是否是系统段，如调用门或者中断
+#define SEG_S_NORMAL		(1 << 4)		// 普通的代码段或数据段
+
+#define SEG_TYPE_CODE		(1 << 3)		// 指定其为代码段
+#define SEG_TYPE_DATA		(0 << 3)		// 数据段
+
+#define SEG_TYPE_RW			(1 << 1)		// 是否可写可读，不设置为只读
+
+
+#endif
+```
+
+Os_cfg.h
+
+```c
+#ifndef OS_CFG_H
+#define OS_CFG_H
+
+#define GDT_TABLE_SIZE 256
+
+#define KERNEL_SELECTOR_CS (1*8)
+#define KERNEL_SELECTOR_DS (2*8)
+
+#endif
+```
+
+- 修改kernel/init/inti.c中kernel_init函数
+
+```c
+void kernel_init(boot_info_t boot_info){
+    cpu_init(); //位于kernel/cpu/cpu.c中
+}
+```
+
+- 修改kernel/init/start.S
+
+```
+#include "os_cfg.h" 
+
+
+ 	.text
+	.extern kernel_init
+	.global _start
+	.extern init_main
+_start:
+	# void start (boot_info_t * boot_info)	
+	mov 4(%esp), %eax
+
+	# void kernel_init(boot_info_t boot_info)
+	push %eax
+	call kernel_init
+
+	jmp $KERNEL_SELECTOR_CS, $gdt_reload
+
+gdt_reload:
+	//
+	mov $KERNEL_SELECTOR_DS, %ax
+	mov %ax, %ds
+    mov %ax, %ss
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+
+	mov $(stack + KERNEL_STACK_SIZE), %esp
+	jmp init_main
+
+	.bss
+.comm stack, KERNEL_STACK_SIZE
+```
+

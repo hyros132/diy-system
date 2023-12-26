@@ -31,9 +31,6 @@ default_target: all
 
 .SUFFIXES: .hpux_make_needs_suffix_list
 
-# Produce verbose output by default.
-VERBOSE = 1
-
 # Command-line flag to silence nested $(MAKE).
 $(VERBOSE)MAKESILENT = -s
 
@@ -133,6 +130,54 @@ kernel/fast:
 	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/build
 .PHONY : kernel/fast
 
+cpu/cpu.obj: cpu/cpu.c.obj
+.PHONY : cpu/cpu.obj
+
+# target to build an object file
+cpu/cpu.c.obj:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj
+.PHONY : cpu/cpu.c.obj
+
+cpu/cpu.i: cpu/cpu.c.i
+.PHONY : cpu/cpu.i
+
+# target to preprocess a source file
+cpu/cpu.c.i:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.i
+.PHONY : cpu/cpu.c.i
+
+cpu/cpu.s: cpu/cpu.c.s
+.PHONY : cpu/cpu.s
+
+# target to generate assembly for a file
+cpu/cpu.c.s:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.s
+.PHONY : cpu/cpu.c.s
+
+cpu/irq.obj: cpu/irq.c.obj
+.PHONY : cpu/irq.obj
+
+# target to build an object file
+cpu/irq.c.obj:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj
+.PHONY : cpu/irq.c.obj
+
+cpu/irq.i: cpu/irq.c.i
+.PHONY : cpu/irq.i
+
+# target to preprocess a source file
+cpu/irq.c.i:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.i
+.PHONY : cpu/irq.c.i
+
+cpu/irq.s: cpu/irq.c.s
+.PHONY : cpu/irq.s
+
+# target to generate assembly for a file
+cpu/irq.c.s:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.s
+.PHONY : cpu/irq.c.s
+
 init/init.obj: init/init.c.obj
 .PHONY : init/init.obj
 
@@ -174,6 +219,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... kernel"
+	@echo "... cpu/cpu.obj"
+	@echo "... cpu/cpu.i"
+	@echo "... cpu/cpu.s"
+	@echo "... cpu/irq.obj"
+	@echo "... cpu/irq.i"
+	@echo "... cpu/irq.s"
 	@echo "... init/init.obj"
 	@echo "... init/init.i"
 	@echo "... init/init.s"

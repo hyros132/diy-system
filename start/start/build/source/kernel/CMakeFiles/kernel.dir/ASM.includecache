@@ -6,5 +6,9 @@
 
 #IncludeRegexTransform: 
 
+/Users/hyros/code/OS/mycode/start/start/source/kernel/include/os_cfg.h
+
 /Users/hyros/code/OS/mycode/start/start/source/kernel/init/start.S
+os_cfg.h
+/Users/hyros/code/OS/mycode/start/start/source/kernel/init/os_cfg.h
 

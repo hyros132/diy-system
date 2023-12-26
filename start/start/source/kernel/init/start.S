@@ -1,7 +1,10 @@
+#include "os_cfg.h" 
+
+
  	.text
 	.extern kernel_init
 	.global _start
-
+	.extern init_main
 _start:
 	# void start (boot_info_t * boot_info)	
 	mov 4(%esp), %eax
@@ -9,4 +12,21 @@ _start:
 	# void kernel_init(boot_info_t boot_info)
 	push %eax
 	call kernel_init
-	jmp .
+
+	jmp $KERNEL_SELECTOR_CS, $gdt_reload
+
+gdt_reload:
+	//
+	mov $KERNEL_SELECTOR_DS, %ax
+	mov %ax, %ds
+    mov %ax, %ss
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+
+	// 设置一段全新栈
+	mov $(stack + KERNEL_STACK_SIZE), %esp
+	jmp init_main
+
+	.bss
+.comm stack, KERNEL_STACK_SIZE

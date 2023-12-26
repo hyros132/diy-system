@@ -23,6 +23,7 @@ _start:
 	.global protect_mode_entry
 	.extern load_kernel
 protect_mode_entry:
+	# 将以下寄存器的工作模式切换到32位（为什么是16以后会讲）
 	mov $16, %ax
 	mov %ax, %ds
 	mov %ax, %ss
