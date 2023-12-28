@@ -109,31 +109,32 @@ __asm__(".code16gcc"); //生成16位代码
 
 boot_info_t boot_info;
 
+static void show_msg(const char* msg){
     8018:	66 55                	push   %ebp
     801a:	66 89 e5             	mov    %esp,%ebp
     801d:	66 83 ec 14          	sub    $0x14,%esp
     8021:	67 66 8b 45 08       	mov    0x8(%ebp),%eax
     8026:	67 89 45 ec          	mov    %ax,-0x14(%ebp)
-static void show_msg(const char* msg){
     char c;
     while((c=*msg++)!='\0'){
+        __asm__ __volatile__(
     802a:	67 66 0f b7 45 ec    	movzwl -0x14(%ebp),%eax
     8030:	66 89 c2             	mov    %eax,%edx
     8033:	ec                   	in     (%dx),%al
     8034:	67 88 45 ff          	mov    %al,-0x1(%ebp)
-        __asm__ __volatile__(
-    8038:	67 66 0f b6 45 ff    	movzbl -0x1(%ebp),%eax
             "mov $0xe, %%ah\n\t"
+    8038:	67 66 0f b6 45 ff    	movzbl -0x1(%ebp),%eax
+            "mov %[ch], %%al\n\t"
     803e:	66 c9                	leavel
     8040:	66 c3                	retl
 
 00008042 <outb>:
-    }
 }
 
 // 参考：https://wiki.osdev.org/Memory_Map_(x86)
 // 1MB以下比较标准, 在1M以上会有差别
 // 检测：https://wiki.osdev.org/Detecting_Memory_(x86)#BIOS_Function:_INT_0x15.2C_AH_.3D_0xC7
+static void  detect_memory(void) {
     8042:	66 55                	push   %ebp
     8044:	66 89 e5             	mov    %esp,%ebp
     8047:	66 83 ec 08          	sub    $0x8,%esp
@@ -141,111 +142,111 @@ static void show_msg(const char* msg){
     8050:	67 66 8b 45 0c       	mov    0xc(%ebp),%eax
     8055:	67 89 55 fc          	mov    %dx,-0x4(%ebp)
     8059:	67 88 45 f8          	mov    %al,-0x8(%ebp)
-static void  detect_memory(void) {
+	uint32_t contID = 0;
     805d:	67 66 0f b7 55 fc    	movzwl -0x4(%ebp),%edx
     8063:	67 66 0f b6 45 f8    	movzbl -0x8(%ebp),%eax
     8069:	ee                   	out    %al,(%dx)
-	uint32_t contID = 0;
+	SMAP_entry_t smap_entry;
     806a:	90                   	nop
     806b:	66 c9                	leavel
     806d:	66 c3                	retl
 
 0000806f <cli>:
-	SMAP_entry_t smap_entry;
 	int signature, bytes;
 
+    show_msg("try to detect memory:");
     806f:	66 55                	push   %ebp
     8071:	66 89 e5             	mov    %esp,%ebp
-    show_msg("try to detect memory:");
-    8074:	fa                   	cli
 
+    8074:	fa                   	cli
+	// 初次：EDX=0x534D4150,EAX=0xE820,ECX=24,INT 0x15, EBX=0（初次）
     8075:	90                   	nop
     8076:	66 5d                	pop    %ebp
     8078:	66 c3                	retl
 
 0000807a <lgdt>:
-	// 后续：EAX=0xE820,ECX=24,
 	// 结束判断：EBX=0
 	boot_info.ram_region_count = 0;
 	for (int i = 0; i < BOOT_RAM_REGION_MAX; i++) {
 		SMAP_entry_t * entry = &smap_entry;
 
+		__asm__ __volatile__("int  $0x15"
     807a:	66 55                	push   %ebp
     807c:	66 89 e5             	mov    %esp,%ebp
     807f:	66 83 ec 10          	sub    $0x10,%esp
-			: "=a"(signature), "=c"(bytes), "=b"(contID)
 			: "a"(0xE820), "b"(contID), "c"(24), "d"(0x534D4150), "D"(entry));
 		if (signature != 0x534D4150) {
             show_msg("failed.\r\n");
 			return;
 		}
+
     8083:	67 66 8b 45 08       	mov    0x8(%ebp),%eax
     8088:	66 c1 e8 10          	shr    $0x10,%eax
     808c:	67 89 45 fe          	mov    %ax,-0x2(%ebp)
-
+		// todo: 20字节
     8090:	67 66 8b 45 08       	mov    0x8(%ebp),%eax
     8095:	67 89 45 fc          	mov    %ax,-0x4(%ebp)
-		// todo: 20字节
+		if (bytes > 20 && (entry->ACPI & 0x0001) == 0){
     8099:	67 66 8b 45 0c       	mov    0xc(%ebp),%eax
     809e:	66 83 e8 01          	sub    $0x1,%eax
     80a2:	67 89 45 fa          	mov    %ax,-0x6(%ebp)
-		if (bytes > 20 && (entry->ACPI & 0x0001) == 0){
 			continue;
-    80a6:	67 0f 01 55 fa       	lgdtw  -0x6(%ebp)
 		}
+    80a6:	67 0f 01 55 fa       	lgdtw  -0x6(%ebp)
+
     80ab:	90                   	nop
     80ac:	66 c9                	leavel
     80ae:	66 c3                	retl
 
 000080b0 <read_cr0>:
-			break;
 		}
 	}
     show_msg("ok.\r\n");
 }
 
+// GDT表。临时用，后面内容会替换成自己的
     80b0:	66 55                	push   %ebp
     80b2:	66 89 e5             	mov    %esp,%ebp
     80b5:	66 83 ec 10          	sub    $0x10,%esp
-// GDT表。临时用，后面内容会替换成自己的
 uint16_t gdt_table[][4] = {
+    {0, 0, 0, 0},
     80b9:	0f 20 c0             	mov    %cr0,%eax
     80bc:	67 66 89 45 fc       	mov    %eax,-0x4(%ebp)
-    {0, 0, 0, 0},
-    80c1:	67 66 8b 45 fc       	mov    -0x4(%ebp),%eax
     {0xFFFF, 0x0000, 0x9A00, 0x00CF},
+    80c1:	67 66 8b 45 fc       	mov    -0x4(%ebp),%eax
+    {0xFFFF, 0x0000, 0x9200, 0x00CF},
     80c6:	66 c9                	leavel
     80c8:	66 c3                	retl
 
 000080ca <write_cr0>:
-    {0xFFFF, 0x0000, 0x9200, 0x00CF},
 };
+
     80ca:	66 55                	push   %ebp
     80cc:	66 89 e5             	mov    %esp,%ebp
-
+//进入保护模式
     80cf:	67 66 8b 45 08       	mov    0x8(%ebp),%eax
     80d4:	0f 22 c0             	mov    %eax,%cr0
-//进入保护模式
+static void enter_protect_mode(void){
     80d7:	90                   	nop
     80d8:	66 5d                	pop    %ebp
     80da:	66 c3                	retl
 
 000080dc <far_jump>:
-static void enter_protect_mode(void){
 	cli();
 
+	//开启A20地址线
     80dc:	66 55                	push   %ebp
     80de:	66 89 e5             	mov    %esp,%ebp
     80e1:	66 83 ec 10          	sub    $0x10,%esp
-	//开启A20地址线
+	uint8_t v = inb(0x92);
     80e5:	67 66 8b 45 0c       	mov    0xc(%ebp),%eax
     80ea:	67 66 89 45 f8       	mov    %eax,-0x8(%ebp)
     80ef:	67 66 8b 45 08       	mov    0x8(%ebp),%eax
     80f4:	67 66 89 45 fc       	mov    %eax,-0x4(%ebp)
-	uint8_t v = inb(0x92);
+	outb(0x92, v|0x2);
     80f9:	67 66 8d 45 f8       	lea    -0x8(%ebp),%eax
     80fe:	67 66 ff 28          	ljmpl  *(%eax)
-	outb(0x92, v|0x2);
+	//加载gdt表
     8102:	90                   	nop
     8103:	66 c9                	leavel
     8105:	66 c3                	retl
@@ -396,7 +397,6 @@ static void enter_protect_mode(void){
     82af:	66 68 92 00 00 00    	pushl  $0x92
     82b5:	66 e8 87 fd ff ff    	calll  8042 <outb>
     82bb:	66 83 c4 08          	add    $0x8,%esp
-	//加载gdt表
 	lgdt((uint32_t)gdt_table,sizeof(gdt_table));
     82bf:	66 b8 68 96 00 00    	mov    $0x9668,%eax
     82c5:	66 6a 18             	pushl  $0x18
@@ -449,48 +449,49 @@ void loader_entry(void){
 /**
 * 使用LBA48位模式读取磁盘
 */
+static void read_disk(int sector, int sector_count, uint8_t * buf) {
     8334:	55                   	push   %bp
     8335:	89 e5                	mov    %sp,%bp
     8337:	83 ec 14             	sub    $0x14,%sp
     833a:	8b 45 08             	mov    0x8(%di),%ax
     833d:	66 89 45 ec          	mov    %eax,-0x14(%di)
-static void read_disk(int sector, int sector_count, uint8_t * buf) {
     outb(0x1F6, (uint8_t) (0xE0));
 
+	outb(0x1F2, (uint8_t) (sector_count >> 8));
     8341:	0f b7 45 ec          	movzww -0x14(%di),%ax
     8345:	89 c2                	mov    %ax,%dx
     8347:	ec                   	in     (%dx),%al
     8348:	88 45 ff             	mov    %al,-0x1(%di)
-	outb(0x1F2, (uint8_t) (sector_count >> 8));
-    834b:	0f b6 45 ff          	movzbw -0x1(%di),%ax
     outb(0x1F3, (uint8_t) (sector >> 24));		// LBA参数的24~31位
+    834b:	0f b6 45 ff          	movzbw -0x1(%di),%ax
+    outb(0x1F4, (uint8_t) (0));					// LBA参数的32~39位
     834f:	c9                   	leave
     8350:	c3                   	ret
 
 00008351 <inw>:
-    outb(0x1F4, (uint8_t) (0));					// LBA参数的32~39位
     outb(0x1F5, (uint8_t) (0));					// LBA参数的40~47位
+
     8351:	55                   	push   %bp
     8352:	89 e5                	mov    %sp,%bp
     8354:	83 ec 14             	sub    $0x14,%sp
     8357:	8b 45 08             	mov    0x8(%di),%ax
     835a:	66 89 45 ec          	mov    %eax,-0x14(%di)
-
     outb(0x1F2, (uint8_t) (sector_count));
+	outb(0x1F3, (uint8_t) (sector));			// LBA参数的0~7位
     835e:	0f b7 45 ec          	movzww -0x14(%di),%ax
     8362:	89 c2                	mov    %ax,%dx
     8364:	66 ed                	in     (%dx),%eax
     8366:	66 89 45 fe          	mov    %eax,-0x2(%di)
-	outb(0x1F3, (uint8_t) (sector));			// LBA参数的0~7位
-    836a:	0f b7 45 fe          	movzww -0x2(%di),%ax
 	outb(0x1F4, (uint8_t) (sector >> 8));		// LBA参数的8~15位
+    836a:	0f b7 45 fe          	movzww -0x2(%di),%ax
+	outb(0x1F5, (uint8_t) (sector >> 16));		// LBA参数的16~23位
     836e:	c9                   	leave
     836f:	c3                   	ret
 
 00008370 <outb>:
-	outb(0x1F5, (uint8_t) (sector >> 16));		// LBA参数的16~23位
 
 	outb(0x1F7, (uint8_t) 0x24);
+
     8370:	55                   	push   %bp
     8371:	89 e5                	mov    %sp,%bp
     8373:	83 ec 08             	sub    $0x8,%sp
@@ -498,11 +499,11 @@ static void read_disk(int sector, int sector_count, uint8_t * buf) {
     8379:	8b 45 0c             	mov    0xc(%di),%ax
     837c:	66 89 55 fc          	mov    %edx,-0x4(%di)
     8380:	88 45 f8             	mov    %al,-0x8(%di)
-
+	// 读取数据
     8383:	0f b7 55 fc          	movzww -0x4(%di),%dx
     8387:	0f b6 45 f8          	movzbw -0x8(%di),%ax
     838b:	ee                   	out    %al,(%dx)
-	// 读取数据
+	uint16_t *data_buf = (uint16_t*) buf;
     838c:	90                   	nop
     838d:	c9                   	leave
     838e:	c3                   	ret

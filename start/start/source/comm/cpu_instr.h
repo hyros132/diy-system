@@ -1,5 +1,6 @@
 #ifndef CPU_INSTR_H
 #define CPU_INSTR_H
+#include "types.h"
 
 //从port读取八位数据
 static inline uint8_t inb(uint16_t port){
@@ -71,6 +72,10 @@ static inline void write_cr0(uint32_t v) {
 static inline void far_jump(uint32_t selector, uint32_t offset) {
 	uint32_t addr[] = {offset, selector };
 	__asm__ __volatile__("ljmpl *(%[a])"::[a]"r"(addr));
+}
+
+static inline void hlt(void) {
+    __asm__ __volatile__("hlt");
 }
 
 #endif

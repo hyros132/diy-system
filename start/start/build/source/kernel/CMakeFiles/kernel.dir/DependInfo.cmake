@@ -23,7 +23,10 @@ set(CMAKE_ASM_TARGET_INCLUDE_PATH
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/cpu.c" "source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj" "gcc" "source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj.d"
   "/Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/irq.c" "source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj" "gcc" "source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj.d"
+  "/Users/hyros/code/OS/mycode/start/start/source/kernel/dev/time.c" "source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj" "gcc" "source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj.d"
   "/Users/hyros/code/OS/mycode/start/start/source/kernel/init/init.c" "source/kernel/CMakeFiles/kernel.dir/init/init.c.obj" "gcc" "source/kernel/CMakeFiles/kernel.dir/init/init.c.obj.d"
+  "/Users/hyros/code/OS/mycode/start/start/source/kernel/tools/klib.c" "source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj" "gcc" "source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj.d"
+  "/Users/hyros/code/OS/mycode/start/start/source/kernel/tools/log.c" "source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj" "gcc" "source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

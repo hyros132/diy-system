@@ -43,6 +43,13 @@ typedef struct _gate_desc_t {
 
 #define SEG_TYPE_RW			(1 << 1)		// 是否可写可读，不设置为只读
 
+
+#define GATE_TYPE_IDT		(0xE << 8)		// 中断32位门描述符
+#define GATE_TYPE_SYSCALL	(0xC << 8)		// 调用门
+#define GATE_P_PRESENT		(1 << 15)		// 是否存在
+#define GATE_DPL0			(0 << 13)		// 特权级0，最高特权级
+#define GATE_DPL3			(3 << 13)		// 特权级3，最低权限
+
 void cpu_init (void);
 void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr);
 void gate_desc_set(gate_desc_t * desc, uint16_t selector, uint32_t offset, uint16_t attr);

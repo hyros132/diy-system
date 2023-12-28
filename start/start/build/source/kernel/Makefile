@@ -178,6 +178,30 @@ cpu/irq.c.s:
 	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.s
 .PHONY : cpu/irq.c.s
 
+dev/time.obj: dev/time.c.obj
+.PHONY : dev/time.obj
+
+# target to build an object file
+dev/time.c.obj:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj
+.PHONY : dev/time.c.obj
+
+dev/time.i: dev/time.c.i
+.PHONY : dev/time.i
+
+# target to preprocess a source file
+dev/time.c.i:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/dev/time.c.i
+.PHONY : dev/time.c.i
+
+dev/time.s: dev/time.c.s
+.PHONY : dev/time.s
+
+# target to generate assembly for a file
+dev/time.c.s:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/dev/time.c.s
+.PHONY : dev/time.c.s
+
 init/init.obj: init/init.c.obj
 .PHONY : init/init.obj
 
@@ -210,6 +234,54 @@ init/start.S.obj:
 	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/init/start.S.obj
 .PHONY : init/start.S.obj
 
+tools/klib.obj: tools/klib.c.obj
+.PHONY : tools/klib.obj
+
+# target to build an object file
+tools/klib.c.obj:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj
+.PHONY : tools/klib.c.obj
+
+tools/klib.i: tools/klib.c.i
+.PHONY : tools/klib.i
+
+# target to preprocess a source file
+tools/klib.c.i:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/tools/klib.c.i
+.PHONY : tools/klib.c.i
+
+tools/klib.s: tools/klib.c.s
+.PHONY : tools/klib.s
+
+# target to generate assembly for a file
+tools/klib.c.s:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/tools/klib.c.s
+.PHONY : tools/klib.c.s
+
+tools/log.obj: tools/log.c.obj
+.PHONY : tools/log.obj
+
+# target to build an object file
+tools/log.c.obj:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj
+.PHONY : tools/log.c.obj
+
+tools/log.i: tools/log.c.i
+.PHONY : tools/log.i
+
+# target to preprocess a source file
+tools/log.c.i:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/tools/log.c.i
+.PHONY : tools/log.c.i
+
+tools/log.s: tools/log.c.s
+.PHONY : tools/log.s
+
+# target to generate assembly for a file
+tools/log.c.s:
+	cd /Users/hyros/code/OS/mycode/start/start/build && $(MAKE) $(MAKESILENT) -f source/kernel/CMakeFiles/kernel.dir/build.make source/kernel/CMakeFiles/kernel.dir/tools/log.c.s
+.PHONY : tools/log.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -225,10 +297,19 @@ help:
 	@echo "... cpu/irq.obj"
 	@echo "... cpu/irq.i"
 	@echo "... cpu/irq.s"
+	@echo "... dev/time.obj"
+	@echo "... dev/time.i"
+	@echo "... dev/time.s"
 	@echo "... init/init.obj"
 	@echo "... init/init.i"
 	@echo "... init/init.s"
 	@echo "... init/start.obj"
+	@echo "... tools/klib.obj"
+	@echo "... tools/klib.i"
+	@echo "... tools/klib.s"
+	@echo "... tools/log.obj"
+	@echo "... tools/log.i"
+	@echo "... tools/log.s"
 .PHONY : help
 
 

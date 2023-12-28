@@ -49,8 +49,26 @@
 },
 {
   "directory": "/Users/hyros/code/OS/mycode/start/start/build/source/kernel",
+  "command": "/opt/homebrew/bin/x86_64-elf-gcc  -I/Users/hyros/code/OS/mycode/start/start/source -I/Users/hyros/code/OS/mycode/start/start/source/kernel/include -I/Users/hyros/code/OS/mycode/start/start/../newlib/i686-elf/include -g -c -O0 -m32 -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -g -o CMakeFiles/kernel.dir/dev/time.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/dev/time.c",
+  "file": "/Users/hyros/code/OS/mycode/start/start/source/kernel/dev/time.c",
+  "output": "source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj"
+},
+{
+  "directory": "/Users/hyros/code/OS/mycode/start/start/build/source/kernel",
   "command": "/opt/homebrew/bin/x86_64-elf-gcc  -I/Users/hyros/code/OS/mycode/start/start/source -I/Users/hyros/code/OS/mycode/start/start/source/kernel/include -I/Users/hyros/code/OS/mycode/start/start/../newlib/i686-elf/include -g -c -O0 -m32 -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -g -o CMakeFiles/kernel.dir/init/init.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/init/init.c",
   "file": "/Users/hyros/code/OS/mycode/start/start/source/kernel/init/init.c",
   "output": "source/kernel/CMakeFiles/kernel.dir/init/init.c.obj"
+},
+{
+  "directory": "/Users/hyros/code/OS/mycode/start/start/build/source/kernel",
+  "command": "/opt/homebrew/bin/x86_64-elf-gcc  -I/Users/hyros/code/OS/mycode/start/start/source -I/Users/hyros/code/OS/mycode/start/start/source/kernel/include -I/Users/hyros/code/OS/mycode/start/start/../newlib/i686-elf/include -g -c -O0 -m32 -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -g -o CMakeFiles/kernel.dir/tools/klib.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/tools/klib.c",
+  "file": "/Users/hyros/code/OS/mycode/start/start/source/kernel/tools/klib.c",
+  "output": "source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj"
+},
+{
+  "directory": "/Users/hyros/code/OS/mycode/start/start/build/source/kernel",
+  "command": "/opt/homebrew/bin/x86_64-elf-gcc  -I/Users/hyros/code/OS/mycode/start/start/source -I/Users/hyros/code/OS/mycode/start/start/source/kernel/include -I/Users/hyros/code/OS/mycode/start/start/../newlib/i686-elf/include -g -c -O0 -m32 -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -g -o CMakeFiles/kernel.dir/tools/log.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/tools/log.c",
+  "file": "/Users/hyros/code/OS/mycode/start/start/source/kernel/tools/log.c",
+  "output": "source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj"
 }
 ]

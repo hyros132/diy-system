@@ -509,6 +509,8 @@ typedef struct _segment_desc_t {
 
 如下图所示，逻辑地址前16位会被当作段选择子，通过选择子查询GDT表，通过里面记录的段起始地址（同时还会做一些权限的校验）+ 后32位（offset）得到线性地址。线性地址再通过地址映射得到物理地址。
 
+![image-20231226194317243](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226194317243.png)
+
 ![image-20231225201655511](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231225201655511.png)
 
 **实战步骤：**
@@ -669,3 +671,493 @@ gdt_reload:
 .comm stack, KERNEL_STACK_SIZE
 ```
 
+#### 触发异常与异常简介
+
+<img src="img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226110218592.png" alt="image-20231226110218592" style="zoom:50%;" />
+
+IA-32下异常中断工255种，其中0-31被内部保留
+
+#### 添加中断门描述符
+
+![image-20231226110558157](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226110558157.png)
+
+根据Interrupt Gate的结构新建结构体，并存放于cpu.h下
+
+```c
+/*
+ * 调用门描述符
+ */
+typedef struct _gate_desc_t {
+	uint16_t offset15_0;
+	uint16_t selector;
+	uint16_t attr;
+	uint16_t offset31_16;
+}gate_desc_t;
+```
+
+中断处理流程
+
+![image-20231226110813815](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226110813815.png)
+
+IDTR寄存器结构
+
+![image-20231226111055756](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226111055756.png)
+
+新建kernel/include/cpu/irq.h
+
+```c
+#ifndef IRQ_H
+#define IRQ_H
+
+void irq_init(void);
+
+#endif 
+```
+
+新建kernel/cpu/irq.c
+
+```c
+#include "cpu/irq.h"
+#include "cpu/cpu.h"
+#include "comm/cpu_instr.h"
+
+#define IDT_TABLE_NR 128
+
+static gate_desc_t idt_table[IDT_TABLE_NR];
+
+void irq_init(void){
+    for(int i=0;i<IDT_TABLE_NR;i++){
+        gate_desc_set(idt_table+i,0,0,0);
+    }
+    lidt((uint32_t)idt_table,sizeof(idt_table));
+}
+```
+
+#### 解析异常栈信息
+
+跳转到中断处理函数前，会自动压入四个信息。
+
+![image-20231226211108591](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226211108591.png)
+
+再加上我们的pusha和push压入的寄存器，栈中保存的信息如下。
+
+![image-20231226211034163](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226211034163.png)
+
+此时，我们调用中断处理函数，相当于这些函数的形参有很多。为了解决这个问题，我们将这些参数封装成一个结构体存放于irq.h
+
+```c
+typedef struct _exception_frame_t {
+    // 结合压栈的过程，以及pusha指令的实际压入过程
+    int gs, fs, es, ds;
+    int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    // int num;
+    // int error_code;
+    int eip, cs, eflags;
+}exception_frame_t;
+```
+
+我们在调用中断处理函数前还需要将这个结构体的地址（也就是esp指针）当作参数传递给函数，对应的函数签名：
+
+```c
+void do_handler_unknown (exception_frame_t * frame);
+```
+
+![image-20231226212825084](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226212825084.png)
+
+为达到以上效果的汇编代码：
+
+```
+	.text
+	.extern do_handler_unknown
+	.global exception_handler_unknown
+exception_handler_unknown:
+	// 保存所有寄存器
+	pusha
+	push %ds
+	push %es
+	push %fs
+	push %gs
+
+	// 调用中断处理函数
+	push %esp
+	call do_handler_unknown
+	add $(1*4), %esp		// 丢掉esp
+
+	// 恢复保存的寄存器
+	pop %gs
+	pop %fs
+	pop %es
+	pop %ds
+	popa
+	iret
+```
+
+在中断发生之前，硬件会自动将pc指针（eip）寄存器保存到栈中，接下来我们来验证。
+
+```
+void init_main(void) {
+   10257:	55                   	push   %ebp
+   10258:	89 e5                	mov    %esp,%ebp
+   1025a:	83 ec 10             	sub    $0x10,%esp
+    int a = 3 / 0;
+   1025d:	b8 03 00 00 00       	mov    $0x3,%eax
+   10262:	b9 00 00 00 00       	mov    $0x0,%ecx
+   10267:	99                   	cltd
+   10268:	f7 f9                	idiv   %ecx
+   1026a:	89 45 fc             	mov    %eax,-0x4(%ebp)
+    for (;;) {}
+   1026d:	eb fe                	jmp    1026d <init_main+0x16>
+```
+
+init_main的反汇编代码中，10268对应的就是/0操作，当跳转到中断处理函数后，我们观察上面定义的结构体的信息。其中eip寄存器刚好是10268。
+
+<img src="img/:Users:hyros:Library:Application Support:typora-user-images:image-20231226214453607.png" alt="image-20231226214453607" style="zoom:25%;" />
+
+#### 利用宏重用异常处理代码
+
+为了重用异常处理代码，我们将汇编代码写成宏的形式，放于kernel/init/start.S下
+
+```
+// 中断发生时，会自动切换到特权级0对应的栈中去执行
+// 并且只保存ss,esp,cs,eip,flags寄存器
+// 所以需要在中断中自行保存其它寄存器
+   .text
+.macro exception_handler name num with_error_code
+	  .extern do_handler_\name
+		.global exception_handler_\name
+	exception_handler_\name:
+		// 如果没有错误码，压入一个缺省值
+		// 这样堆栈就和有错误码的情形一样了
+		.if \with_error_code == 0
+			push $0
+		.endif
+
+		// 压入异常号
+		push $\num
+
+		// 保存所有寄存器
+		pushal
+		push %ds
+		push %es
+		push %fs
+		push %gs
+
+		// 调用中断处理函数
+		push %esp
+		call do_handler_\name
+		add $(1*4), %esp		// 丢掉esp
+
+		// 恢复保存的寄存器
+		pop %gs
+		pop %fs
+		pop %es
+		pop %ds
+		popal
+
+		// 跳过压入的异常号和错误码
+		add $(2*4), %esp
+		iret
+.endm
+```
+
+重新编辑结构体，压入错误码和向量号等信息，与上面汇编保持一致
+
+```c
+/**
+ * 中断发生时相应的栈结构，暂时为无特权级发生的情况
+ */
+typedef struct _exception_frame_t {
+    // 结合压栈的过程，以及pusha指令的实际压入过程
+    int gs, fs, es, ds;
+    int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    int num;
+    int error_code;
+    int eip, cs, eflags;
+}exception_frame_t;
+```
+
+声明中断处理函数
+
+```c
+typedef void(*irq_handler_t)(void);
+```
+
+安装中断或异常处理程序，为中断向量号为irq_num 的设置中断处理函数 handler
+
+```c
+/**
+ * @brief 安装中断或异常处理程序
+ */
+int irq_install(int irq_num, irq_handler_t handler) {
+	if (irq_num >= IDT_TABLE_NR) {
+		return -1;
+	}
+
+    gate_desc_set(idt_table + irq_num, KERNEL_SELECTOR_CS, (uint32_t) handler,
+                  GATE_P_PRESENT | GATE_DPL0 | GATE_TYPE_IDT);
+	return 0;
+}
+```
+
+在汇编代码下添加
+
+```
+exception_handler divider, 0, 0
+```
+
+就可以添加除0异常，然后通过
+
+```c
+irq_install(IRQ0_DE, (irq_handler_t)exception_handler_divider);
+```
+
+设置门描述符，（类似于中断向量表）
+
+这样等发生中断，会先调用exception_handler_divider也就是汇编代码的入口地址，然后汇编代码调用do_handler_divider处理具体过程。
+
+#### 处理其他类型的异常 
+
+按照上述过程 处理
+
+```c
+// 中断号码
+#define IRQ0_DE             0
+#define IRQ1_DB             1
+#define IRQ2_NMI            2
+#define IRQ3_BP             3
+#define IRQ4_OF             4
+#define IRQ5_BR             5
+#define IRQ6_UD             6
+#define IRQ7_NM             7
+#define IRQ8_DF             8
+#define IRQ10_TS            10
+#define IRQ11_NP            11
+#define IRQ12_SS            12
+#define IRQ13_GP            13
+#define IRQ14_PF            14
+#define IRQ16_MF            16
+#define IRQ17_AC            17
+#define IRQ18_MC            18
+#define IRQ19_XM            19
+#define IRQ20_VE            20
+#define IRQ21_CP            21
+```
+
+#### 初始化中断控制器
+
+- 上面的章节中中断 指的是异常，通常是由CPU内部事件所引起的中断，如程序出错（非法指令，地址越界，除0异常）。通常是由于执行了现行指令所引起的。
+- 中断： 由外部设备，磁盘，键盘等。与现行指令无关
+
+
+
+纯硬件细节，知道怎么设置即可
+
+在irq.c配置初始化函数
+
+```c
+static void init_pic(void) {
+    // 边缘触发，级联，需要配置icw4, 8086模式
+    outb(PIC0_ICW1, PIC_ICW1_ALWAYS_1 | PIC_ICW1_ICW4);
+
+    // 对应的中断号起始序号0x20
+    outb(PIC0_ICW2, IRQ_PIC_START);
+
+    // 主片IRQ2有从片
+    outb(PIC0_ICW3, 1 << 2);
+
+    // 普通全嵌套、非缓冲、非自动结束、8086模式
+    outb(PIC0_ICW4, PIC_ICW4_8086);
+
+    // 边缘触发，级联，需要配置icw4, 8086模式
+    outb(PIC1_ICW1, PIC_ICW1_ICW4 | PIC_ICW1_ALWAYS_1);
+
+    // 起始中断序号，要加上8
+    outb(PIC1_ICW2, IRQ_PIC_START + 8);
+
+    // 没有从片，连接到主片的IRQ2上
+    outb(PIC1_ICW3, 2);
+
+    // 普通全嵌套、非缓冲、非自动结束、8086模式
+    outb(PIC1_ICW4, PIC_ICW4_8086);
+
+    // 禁止所有中断, 允许从PIC1传来的中断
+    outb(PIC0_IMR, 0xFF & ~(1 << 2));
+    outb(PIC1_IMR, 0xFF);
+}
+```
+
+在irq.h中配置相关宏。中断起始号为什么是0x20
+
+```c
+// PIC控制器相关的寄存器及位配置
+#define PIC0_ICW1			0x20
+#define PIC0_ICW2			0x21
+#define PIC0_ICW3			0x21
+#define PIC0_ICW4			0x21
+#define PIC0_OCW2			0x20
+#define PIC0_IMR			0x21
+
+#define PIC1_ICW1			0xa0
+#define PIC1_ICW2			0xa1
+#define PIC1_ICW3			0xa1
+#define PIC1_ICW4			0xa1
+#define PIC1_OCW2			0xa0
+#define PIC1_IMR			0xa1
+
+#define PIC_ICW1_ICW4		(1 << 0)		// 1 - 需要初始化ICW4
+#define PIC_ICW1_ALWAYS_1	(1 << 4)		// 总为1的位
+#define PIC_ICW4_8086	    (1 << 0)        // 8086工作模式
+
+#define IRQ_PIC_START		0x20			// PIC中断起始号
+```
+
+#### 中断的打开与关闭
+
+中断开关分为两种，一个是全局的中断开关，另一个是8258芯片内部的 （irq.c)
+
+```c
+//局部，根据num打开或关闭
+void irq_enable(int irq_num) {
+    if (irq_num < IRQ_PIC_START) {
+        return;
+    }
+
+    irq_num -= IRQ_PIC_START;
+    if (irq_num < 8) {
+        uint8_t mask = inb(PIC0_IMR) & ~(1 << irq_num);
+        outb(PIC0_IMR, mask);
+    } else {
+        irq_num -= 8;
+        uint8_t mask = inb(PIC1_IMR) & ~(1 << irq_num);
+        outb(PIC1_IMR, mask);
+    }
+}
+
+void irq_disable(int irq_num) {
+    if (irq_num < IRQ_PIC_START) {
+        return;
+    }
+
+    irq_num -= IRQ_PIC_START;
+    if (irq_num < 8) {
+        uint8_t mask = inb(PIC0_IMR) | (1 << irq_num);
+        outb(PIC0_IMR, mask);
+    } else {
+        irq_num -= 8;
+        uint8_t mask = inb(PIC1_IMR) | (1 << irq_num);
+        outb(PIC1_IMR, mask);
+    }
+}
+//全局开关中断开关
+void irq_disable_global(void) {
+    cli();
+}
+
+void irq_enable_global(void) {
+    sti();
+}
+```
+
+#### 启动定时器
+
+- 新建dev/time.c time/h文件
+
+```c
+//
+// https://wiki.osdev.org/Programmable_Interval_Timer
+//
+
+#include "dev/time.h"
+#include "cpu/irq.h"
+#include "comm/cpu_instr.h"
+#include "os_cfg.h"
+
+static uint32_t sys_tick;					// 系统启动后的tick数量
+
+/**
+ * 定时器中断处理函数
+ */
+void do_handler_timer (exception_frame_t *frame) {
+    sys_tick++;
+
+    // 先发EOI，而不是放在最后
+    // 放最后将从任务中切换出去之后，除非任务再切换回来才能继续噢应
+    pic_send_eoi(IRQ0_TIMER);
+}
+
+/**
+ * 初始化硬件定时器
+ */
+static void init_pit (void) {
+    uint32_t reload_count = PIT_OSC_FREQ / (1000.0 / OS_TICK_MS);
+
+    outb(PIT_COMMAND_MODE_PORT, PIT_CHANNLE0 | PIT_LOAD_LOHI | PIT_MODE0);
+    outb(PIT_CHANNEL0_DATA_PORT, reload_count & 0xFF);   // 加载低8位
+    outb(PIT_CHANNEL0_DATA_PORT, (reload_count >> 8) & 0xFF); // 再加载高8位
+
+    irq_install(IRQ0_TIMER, (irq_handler_t)exception_handler_timer);
+    irq_enable(IRQ0_TIMER);
+}
+
+/**
+ * 定时器初始化
+ */
+void time_init (void) {
+    sys_tick = 0;
+
+    init_pit();
+}
+```
+
+```c
+#ifndef TIMER_H
+#define TIMER_H
+
+#include "comm/types.h"
+
+#define PIT_OSC_FREQ                1193182				// 定时器时钟
+
+// 定时器的寄存器和各项位配置
+#define PIT_CHANNEL0_DATA_PORT       0x40
+#define PIT_COMMAND_MODE_PORT        0x43
+
+#define PIT_CHANNLE0                (0 << 6)
+#define PIT_LOAD_LOHI               (3 << 4)
+#define PIT_MODE0                   (3 << 1)
+
+void time_init (void);
+void exception_handler_timer (void);
+
+#endif //OS_TIMER_H
+```
+
+
+
+- 配置其他信息 ,在start.S中添加
+
+```
+// 硬件中断
+exception_handler timer, 0x20, 0
+```
+
+- 测试： init.c. 一定要先打开全局中断 ，另外不要在for循环前加断电，这样可能导致进入不了time中断处理函数
+
+```c
+void init_main(void) {
+
+    irq_enable_global();
+    for (;;) {}
+}
+```
+
+#### 配置字符串打印函数
+
+新增kernel/tools/klib.c log.c  kernel/include/tools/klib.h log.h
+
+
+
+```sh
+qemu-system-i386  -m 128M -s -S -serial stdio -drive file=disk1.dmg,index=0,media=disk,format=raw
+```
+
+-serial stdio的作用，是将字符串打印的位置重定向到终端

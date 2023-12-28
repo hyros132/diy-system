@@ -97,7 +97,10 @@
 			[
 				1,
 				2,
-				6
+				3,
+				10,
+				12,
+				13
 			]
 		}
 	],
@@ -139,17 +142,23 @@
 			[
 				1,
 				2,
-				6
+				3,
+				10,
+				12,
+				13
 			]
 		},
 		{
 			"name" : "Header Files",
 			"sourceIndexes" : 
 			[
-				3,
 				4,
 				5,
-				7
+				6,
+				7,
+				8,
+				9,
+				11
 			]
 		}
 	],
@@ -175,6 +184,12 @@
 		},
 		{
 			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "source/kernel/dev/time.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
 			"path" : "source/kernel/include/cpu/cpu.h",
 			"sourceGroupIndex" : 2
 		},
@@ -185,7 +200,22 @@
 		},
 		{
 			"backtrace" : 1,
+			"path" : "source/kernel/include/dev/time.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
 			"path" : "source/kernel/include/os_cfg.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "source/kernel/include/tools/klib.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "source/kernel/include/tools/log.h",
 			"sourceGroupIndex" : 2
 		},
 		{
@@ -198,6 +228,18 @@
 			"backtrace" : 1,
 			"path" : "source/kernel/init/init.h",
 			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "source/kernel/tools/klib.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "source/kernel/tools/log.c",
+			"sourceGroupIndex" : 1
 		}
 	],
 	"type" : "EXECUTABLE"
