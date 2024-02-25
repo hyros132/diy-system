@@ -1154,6 +1154,324 @@ void init_main(void) {
 
 新增kernel/tools/klib.c log.c  kernel/include/tools/klib.h log.h
 
+klib.h
+
+```c
+#ifndef KLIB_H
+#define KLIB_H
+
+#include <stdarg.h>
+#include "comm/types.h"
+
+void kernel_strcpy (char * dest, const char * src);
+void kernel_strncpy(char * dest, const char * src, int size);
+int kernel_strncmp (const char * s1, const char * s2, int size);
+int kernel_strlen(const char * str);
+void kernel_memcpy (void * dest, void * src, int size);
+void kernel_memset(void * dest, uint8_t v, int size);
+int kernel_memcmp (void * d1, void * d2, int size);
+void kernel_itoa(char * buf, int num, int base);
+void kernel_sprintf(char * buffer, const char * fmt, ...);
+void kernel_vsprintf(char * buffer, const char * fmt, va_list args);
+
+#ifndef RELEASE
+#define ASSERT(condition)    \
+    if (!(condition)) panic(__FILE__, __LINE__, __func__, #condition)
+void panic (const char * file, int line, const char * func, const char * cond);
+#else
+#define ASSERT(condition)    ((void)0)
+#endif
+
+#endif //KLIB_H
+
+```
+
+```c
+#ifndef LOG_H
+#define LOG_H
+
+void log_init(void);
+void log_printf(const char* fmt,...);
+
+#endif
+```
+
+klib.c
+
+```c
+/**
+ * 一些字符串的处理函数
+ *
+ * 创建时间：2022年8月5日
+ * 作者：李述铜
+ * 联系邮箱: 527676163@qq.com
+ */
+#include "tools/klib.h"
+#include "tools/log.h"
+#include "comm/cpu_instr.h"
+
+void kernel_strcpy (char * dest, const char * src) {
+    if (!dest || !src) {
+        return;
+    }
+
+    while (*dest && *src) {
+        *dest++ = *src++;
+    }
+    *dest = '\0';
+}
+
+void kernel_strncpy(char * dest, const char * src, int size) {
+    if (!dest || !src || !size) {
+        return;
+    }
+
+    char * d = dest;
+    const char * s = src;
+
+    while ((size-- > 0) && (*s)) {
+        *d++ = *s++;
+    }
+    if (size == 0) {
+        *(d - 1) = '\0';
+    } else {
+        *d = '\0';
+    }
+}
+
+int kernel_strlen(const char * str) {
+    if (str == (const char *)0) {
+        return 0;
+    }
+
+	const char * c = str;
+
+	int len = 0;
+	while (*c++) {
+		len++;
+	}
+
+	return len;
+}
+
+/**
+ * 比较两个字符串，最多比较size个字符
+ * 如果某一字符串提前比较完成，也算相同
+ */
+int kernel_strncmp (const char * s1, const char * s2, int size) {
+    if (!s1 || !s2) {
+        return -1;
+    }
+
+    while (*s1 && *s2 && (*s1 == *s2) && size) {
+    	s1++;
+    	s2++;
+    }
+
+    return !((*s1 == '\0') || (*s2 == '\0') || (*s1 == *s2));
+}
+
+void kernel_memcpy (void * dest, void * src, int size) {
+    if (!dest || !src || !size) {
+        return;
+    }
+
+    uint8_t * s = (uint8_t *)src;
+    uint8_t * d = (uint8_t *)dest;
+    while (size--) {
+        *d++ = *s++;
+    }
+}
+
+void kernel_memset(void * dest, uint8_t v, int size) {
+    if (!dest || !size) {
+        return;
+    }
+
+    uint8_t * d = (uint8_t *)dest;
+    while (size--) {
+        *d++ = v;
+    }
+}
+
+int kernel_memcmp (void * d1, void * d2, int size) {
+    if (!d1 || !d2) {
+        return 1;
+    }
+
+	uint8_t * p_d1 = (uint8_t *)d1;
+	uint8_t * p_d2 = (uint8_t *)d2;
+	while (size--) {
+		if (*p_d1++ != *p_d2++) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+void kernel_itoa(char * buf, int num, int base) {
+    // 转换字符索引[-15, -14, ...-1, 0, 1, ...., 14, 15]
+    static const char * num2ch = {"FEDCBA9876543210123456789ABCDEF"};
+    char * p = buf;
+    int old_num = num;
+
+    // 仅支持部分进制
+    if ((base != 2) && (base != 8) && (base != 10) && (base != 16)) {
+        *p = '\0';
+        return;
+    }
+
+    // 只支持十进制负数
+    int signed_num = 0;
+    if ((num < 0) && (base == 10)) {
+        *p++ = '-';
+        signed_num = 1;
+    }
+
+    if (signed_num) {
+        do {
+            char ch = num2ch[num % base + 15];
+            *p++ = ch;
+            num /= base;
+        } while (num);
+    } else {
+        uint32_t u_num = (uint32_t)num;
+        do {
+            char ch = num2ch[u_num % base + 15];
+            *p++ = ch;
+            u_num /= base;
+        } while (u_num);
+    }
+    *p-- = '\0';
+
+    // 将转换结果逆序，生成最终的结果
+    char * start = (!signed_num) ? buf : buf + 1;
+    while (start < p) {
+        char ch = *start;
+        *start = *p;
+        *p-- = ch;
+        start++;
+    }
+}
+
+/**
+ * @brief 格式化字符串到缓存中
+ */
+void kernel_sprintf(char * buffer, const char * fmt, ...) {
+    va_list args;
+
+    va_start(args, fmt);
+    kernel_vsprintf(buffer, fmt, args);
+    va_end(args);
+}
+
+/**
+ * 格式化字符串
+ */
+void kernel_vsprintf(char * buffer, const char * fmt, va_list args) {
+    enum {NORMAL, READ_FMT} state = NORMAL;
+    char ch;
+    char * curr = buffer;
+    while ((ch = *fmt++)) {
+        switch (state) {
+            // 普通字符
+            case NORMAL:
+                if (ch == '%') {
+                    state = READ_FMT;
+                } else {
+                    *curr++ = ch;
+                }
+                break;
+            // 格式化控制字符，只支持部分
+            case READ_FMT:
+                if (ch == 'd') {
+                    int num = va_arg(args, int);
+                    kernel_itoa(curr, num, 10);
+                    curr += kernel_strlen(curr);
+                } else if (ch == 'x') {
+                    int num = va_arg(args, int);
+                    kernel_itoa(curr, num, 16);
+                    curr += kernel_strlen(curr);
+                } else if (ch == 'c') {
+                    char c = va_arg(args, int);
+                    *curr++ = c;
+                } else if (ch == 's') {
+                    const char * str = va_arg(args, char *);
+                    int len = kernel_strlen(str);
+                    while (len--) {
+                        *curr++ = *str++;
+                    }
+                }
+                state = NORMAL;
+                break;
+        }
+    }
+}
+
+void panic (const char * file, int line, const char * func, const char * cond) {
+    log_printf("assert failed! %s", cond);
+    log_printf("file: %s\nline %d\nfunc: %s\n", file, line, func);
+
+    for (;;) {
+        hlt();
+    }
+}
+```
+
+log.c
+
+```c
+#include <stdarg.h>
+#include "comm/cpu_instr.h"
+#include "tools/klib.h"
+#include "tools/log.h"
+#include "os_cfg.h"
+
+// 目标用串口，参考资料：https://wiki.osdev.org/Serial_Ports
+#define COM1_PORT           0x3F8       // RS232端口0初始化
+
+/**
+ * @brief 初始化日志输出
+ */
+void log_init (void) {
+    outb(COM1_PORT + 1, 0x00);    // Disable all interrupts
+    outb(COM1_PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+    outb(COM1_PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+    outb(COM1_PORT + 1, 0x00);    //                  (hi byte)
+    outb(COM1_PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
+    outb(COM1_PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+  
+    // If serial is not faulty set it in normal operation mode
+    // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
+    outb(COM1_PORT + 4, 0x0F);
+}
+
+/**
+ * @brief 日志打印
+ */
+void log_printf(const char * fmt, ...) {
+    char str_buf[128];
+    va_list args;
+
+    kernel_memset(str_buf, '\0', sizeof(str_buf));
+
+    va_start(args, fmt);
+    kernel_vsprintf(str_buf, fmt, args);
+    va_end(args);
+
+    const char * p = str_buf;    
+    while (*p != '\0') {
+        while ((inb(COM1_PORT + 5) & (1 << 6)) == 0);
+        outb(COM1_PORT, *p++);
+    }
+
+    outb(COM1_PORT, '\r');
+    outb(COM1_PORT, '\n');
+}
+
+```
+
 
 
 ```sh
@@ -1161,3 +1479,56 @@ qemu-system-i386  -m 128M -s -S -serial stdio -drive file=disk1.dmg,index=0,medi
 ```
 
 -serial stdio的作用，是将字符串打印的位置重定向到终端
+
+#### 添加任务状态段TSS
+
+放在cpu.h下
+
+```c
+/**
+ * Task-State Segment (TSS)
+ */
+typedef struct _tss_t {
+    uint32_t pre_link;
+    uint32_t esp0, ss0, esp1, ss1, esp2, ss2;
+    uint32_t cr3;
+    uint32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+    uint32_t es, cs, ss, ds, fs, gs;
+    uint32_t ldt;
+    uint32_t iomap;
+}tss_t;
+```
+
+执行流程	
+
+![image-20231228140250833](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231228140250833.png)
+
+因此，需要给每一个待运行的程序分配一个TSS结构，并且设置好初始值，以便第一次运行时加载正确的值。
+
+![image-20231228140435880](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231228140435880.png)
+
+
+
+存放于GDT表中的字段
+
+![image-20231228150800905](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231228150800905.png)
+
+可以看到和前面，所讲的GDT表的结构是一样的，因此可以复用前面的定义
+
+```c
+/**
+ * GDT描述符 // TSS描述符
+ */
+typedef struct _segment_desc_t {
+	uint16_t limit15_0;
+	uint16_t base15_0;
+	uint8_t base23_16; 
+	uint16_t attr;
+	uint8_t base31_24;
+}segment_desc_t;
+```
+
+根据任务寄存器中的选择子定位GDT表中的TSS描述符，里面记录了当前任务的TSS信息。
+
+![image-20231228151036580](img/:Users:hyros:Library:Application Support:typora-user-images:image-20231228151036580.png)
+

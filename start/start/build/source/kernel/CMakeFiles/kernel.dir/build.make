@@ -27,6 +27,9 @@
 
 .SUFFIXES: .hpux_make_needs_suffix_list
 
+# Produce verbose output by default.
+VERBOSE = 1
+
 # Command-line flag to silence nested $(MAKE).
 $(VERBOSE)MAKESILENT = -s
 
@@ -82,10 +85,24 @@ source/kernel/CMakeFiles/kernel.dir/init/start.S.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling ASM source to assembly CMakeFiles/kernel.dir/init/start.S.s"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(ASM_DEFINES) $(ASM_INCLUDES) $(ASM_FLAGS) -S /Users/hyros/code/OS/mycode/start/start/source/kernel/init/start.S -o CMakeFiles/kernel.dir/init/start.S.s
 
+source/kernel/CMakeFiles/kernel.dir/core/task.c.obj: source/kernel/CMakeFiles/kernel.dir/flags.make
+source/kernel/CMakeFiles/kernel.dir/core/task.c.obj: /Users/hyros/code/OS/mycode/start/start/source/kernel/core/task.c
+source/kernel/CMakeFiles/kernel.dir/core/task.c.obj: source/kernel/CMakeFiles/kernel.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object source/kernel/CMakeFiles/kernel.dir/core/task.c.obj"
+	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT source/kernel/CMakeFiles/kernel.dir/core/task.c.obj -MF CMakeFiles/kernel.dir/core/task.c.obj.d -o CMakeFiles/kernel.dir/core/task.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/core/task.c
+
+source/kernel/CMakeFiles/kernel.dir/core/task.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/kernel.dir/core/task.c.i"
+	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/hyros/code/OS/mycode/start/start/source/kernel/core/task.c > CMakeFiles/kernel.dir/core/task.c.i
+
+source/kernel/CMakeFiles/kernel.dir/core/task.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/kernel.dir/core/task.c.s"
+	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/hyros/code/OS/mycode/start/start/source/kernel/core/task.c -o CMakeFiles/kernel.dir/core/task.c.s
+
 source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj: source/kernel/CMakeFiles/kernel.dir/flags.make
 source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj: /Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/cpu.c
 source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj: source/kernel/CMakeFiles/kernel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj -MF CMakeFiles/kernel.dir/cpu/cpu.c.obj.d -o CMakeFiles/kernel.dir/cpu/cpu.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/cpu.c
 
 source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.i: cmake_force
@@ -99,7 +116,7 @@ source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.s: cmake_force
 source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj: source/kernel/CMakeFiles/kernel.dir/flags.make
 source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj: /Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/irq.c
 source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj: source/kernel/CMakeFiles/kernel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj -MF CMakeFiles/kernel.dir/cpu/irq.c.obj.d -o CMakeFiles/kernel.dir/cpu/irq.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/irq.c
 
 source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.i: cmake_force
@@ -113,7 +130,7 @@ source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.s: cmake_force
 source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj: source/kernel/CMakeFiles/kernel.dir/flags.make
 source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj: /Users/hyros/code/OS/mycode/start/start/source/kernel/dev/time.c
 source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj: source/kernel/CMakeFiles/kernel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj -MF CMakeFiles/kernel.dir/dev/time.c.obj.d -o CMakeFiles/kernel.dir/dev/time.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/dev/time.c
 
 source/kernel/CMakeFiles/kernel.dir/dev/time.c.i: cmake_force
@@ -127,7 +144,7 @@ source/kernel/CMakeFiles/kernel.dir/dev/time.c.s: cmake_force
 source/kernel/CMakeFiles/kernel.dir/init/init.c.obj: source/kernel/CMakeFiles/kernel.dir/flags.make
 source/kernel/CMakeFiles/kernel.dir/init/init.c.obj: /Users/hyros/code/OS/mycode/start/start/source/kernel/init/init.c
 source/kernel/CMakeFiles/kernel.dir/init/init.c.obj: source/kernel/CMakeFiles/kernel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object source/kernel/CMakeFiles/kernel.dir/init/init.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object source/kernel/CMakeFiles/kernel.dir/init/init.c.obj"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT source/kernel/CMakeFiles/kernel.dir/init/init.c.obj -MF CMakeFiles/kernel.dir/init/init.c.obj.d -o CMakeFiles/kernel.dir/init/init.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/init/init.c
 
 source/kernel/CMakeFiles/kernel.dir/init/init.c.i: cmake_force
@@ -141,7 +158,7 @@ source/kernel/CMakeFiles/kernel.dir/init/init.c.s: cmake_force
 source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj: source/kernel/CMakeFiles/kernel.dir/flags.make
 source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj: /Users/hyros/code/OS/mycode/start/start/source/kernel/tools/klib.c
 source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj: source/kernel/CMakeFiles/kernel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj -MF CMakeFiles/kernel.dir/tools/klib.c.obj.d -o CMakeFiles/kernel.dir/tools/klib.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/tools/klib.c
 
 source/kernel/CMakeFiles/kernel.dir/tools/klib.c.i: cmake_force
@@ -155,7 +172,7 @@ source/kernel/CMakeFiles/kernel.dir/tools/klib.c.s: cmake_force
 source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj: source/kernel/CMakeFiles/kernel.dir/flags.make
 source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj: /Users/hyros/code/OS/mycode/start/start/source/kernel/tools/log.c
 source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj: source/kernel/CMakeFiles/kernel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && /opt/homebrew/bin/x86_64-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj -MF CMakeFiles/kernel.dir/tools/log.c.obj.d -o CMakeFiles/kernel.dir/tools/log.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/tools/log.c
 
 source/kernel/CMakeFiles/kernel.dir/tools/log.c.i: cmake_force
@@ -169,6 +186,7 @@ source/kernel/CMakeFiles/kernel.dir/tools/log.c.s: cmake_force
 # Object files for target kernel
 kernel_OBJECTS = \
 "CMakeFiles/kernel.dir/init/start.S.obj" \
+"CMakeFiles/kernel.dir/core/task.c.obj" \
 "CMakeFiles/kernel.dir/cpu/cpu.c.obj" \
 "CMakeFiles/kernel.dir/cpu/irq.c.obj" \
 "CMakeFiles/kernel.dir/dev/time.c.obj" \
@@ -180,6 +198,7 @@ kernel_OBJECTS = \
 kernel_EXTERNAL_OBJECTS =
 
 source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/init/start.S.obj
+source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/core/task.c.obj
 source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj
 source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/cpu/irq.c.obj
 source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/dev/time.c.obj
@@ -188,7 +207,7 @@ source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/tools/klib.c.obj
 source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/tools/log.c.obj
 source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/build.make
 source/kernel/kernel: source/kernel/CMakeFiles/kernel.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking C executable kernel"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/hyros/code/OS/mycode/start/start/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking C executable kernel"
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/kernel.dir/link.txt --verbose=$(VERBOSE)
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && x86_64-elf-objcopy -S kernel.elf /Users/hyros/code/OS/mycode/start/start/../../image/kernel.elf
 	cd /Users/hyros/code/OS/mycode/start/start/build/source/kernel && x86_64-elf-objdump -x -d -S -m i386 /Users/hyros/code/OS/mycode/start/start/build/source/kernel/kernel.elf > kernel_dis.txt

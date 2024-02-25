@@ -6,7 +6,7 @@
 #include "cpu/irq.h"
 #include "comm/cpu_instr.h"
 #include "os_cfg.h"
-
+#include "tools/log.h"
 static uint32_t sys_tick;					// 系统启动后的tick数量
 
 /**
@@ -14,7 +14,7 @@ static uint32_t sys_tick;					// 系统启动后的tick数量
  */
 void do_handler_timer (exception_frame_t *frame) {
     sys_tick++;
-
+    log_printf("timer is running....");
     // 先发EOI，而不是放在最后
     // 放最后将从任务中切换出去之后，除非任务再切换回来才能继续噢应
     pic_send_eoi(IRQ0_TIMER);

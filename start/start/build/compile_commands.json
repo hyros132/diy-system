@@ -37,6 +37,12 @@
 },
 {
   "directory": "/Users/hyros/code/OS/mycode/start/start/build/source/kernel",
+  "command": "/opt/homebrew/bin/x86_64-elf-gcc  -I/Users/hyros/code/OS/mycode/start/start/source -I/Users/hyros/code/OS/mycode/start/start/source/kernel/include -I/Users/hyros/code/OS/mycode/start/start/../newlib/i686-elf/include -g -c -O0 -m32 -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -g -o CMakeFiles/kernel.dir/core/task.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/core/task.c",
+  "file": "/Users/hyros/code/OS/mycode/start/start/source/kernel/core/task.c",
+  "output": "source/kernel/CMakeFiles/kernel.dir/core/task.c.obj"
+},
+{
+  "directory": "/Users/hyros/code/OS/mycode/start/start/build/source/kernel",
   "command": "/opt/homebrew/bin/x86_64-elf-gcc  -I/Users/hyros/code/OS/mycode/start/start/source -I/Users/hyros/code/OS/mycode/start/start/source/kernel/include -I/Users/hyros/code/OS/mycode/start/start/../newlib/i686-elf/include -g -c -O0 -m32 -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -g -o CMakeFiles/kernel.dir/cpu/cpu.c.obj -c /Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/cpu.c",
   "file": "/Users/hyros/code/OS/mycode/start/start/source/kernel/cpu/cpu.c",
   "output": "source/kernel/CMakeFiles/kernel.dir/cpu/cpu.c.obj"
